@@ -1,0 +1,53 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ order.order_number }} — AutoMart Admin{% endblock %}
+{% block content %}
+<div class="admin-topline">
+  <h2 class="mono">{{ order.order_number }}</h2>
+  <a href="{{ url_for('admin.orders') }}" class="btn btn-outline">← All orders</a>
+</div>
+
+<div class="two-col">
+  <div class="card" style="padding:20px;">
+    <h3>Items</h3>
+    {% for item in order.items %}
+      <div class="summary-line"><span>{{ item.product_name }} × {{ item.quantity }}</span><span>{{ currency }}{{ item.line_total }}</span></div>
+    {% endfor %}
+    <div class="summary-line"><span>Delivery</span><span>{{ currency }}{{ order.delivery_fee }}</span></div>
+    <div class="summary-line total"><span>Total</span><span>{{ currency }}{{ order.total }}</span></div>
+
+    <h3 style="margin-top:24px;">Update status</h3>
+    <form method="post" action="{{ url_for('admin.order_update_status', order_number=order.order_number) }}" style="display:flex; gap:10px;">
+      <select name="status">
+        {% for s in statuses %}
+          <option value="{{ s }}" {% if order.status == s %}selected{% endif %}>{{ s.replace('_',' ')|title }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-dark">Update</button>
+    </form>
+  </div>
+
+  <div class="card" style="padding:20px;">
+    <h3>Customer</h3>
+    <p><strong>{{ order.customer.name }}</strong><br class=""><span class="muted">{{ order.customer.email }} · {{ order.customer.phone }}</span></p>
+    {% if order.customer.is_business %}
+      <p class="badge badge-green">B2B · {{ order.customer.company_name }}</p>
+      <p class="muted" style="font-size:0.8rem;">GSTIN: {{ order.customer.gst_number or '—' }}</p>
+    {% endif %}
+
+    <h3 style="margin-top:20px;">Delivery</h3>
+    <p class="muted" style="font-size:0.85rem;">{{ order.delivery_address }}</p>
+    <p style="font-size:0.85rem;"><strong>{{ order.delivery_type|title }}</strong></p>
+    {% if order.po_number %}<p class="mono muted" style="font-size:0.78rem;">PO {{ order.po_number }}</p>{% endif %}
+
+    <h3 style="margin-top:20px;">Payment</h3>
+    {% if order.payment %}
+      <p style="font-size:0.85rem;">{{ order.payment.method_label }} · <span class="badge badge-status">{{ order.payment.status|title }}</span></p>
+      {% if order.payment.transaction_id %}<p class="mono muted" style="font-size:0.78rem;">Txn {{ order.payment.transaction_id }}</p>{% endif %}
+      {% if order.payment.emi_tenure_months %}<p class="muted" style="font-size:0.8rem;">EMI: {{ currency }}{{ order.payment.emi_monthly_amount }}/mo × {{ order.payment.emi_tenure_months }}</p>{% endif %}
+    {% endif %}
+    {% if order.is_credit_order %}
+      <p class="badge badge-express">Net 30 · due {{ order.credit_due_date.strftime('%d %b %Y') }}{% if order.credit_settled %} · Settled{% endif %}</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

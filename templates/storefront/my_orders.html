@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Your orders — AutoMart{% endblock %}
+{% block content %}
+<div class="container section">
+  <h2>Your orders</h2>
+  {% if orders %}
+    <div class="card">
+      <table>
+        <thead><tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          {% for order in orders %}
+            <tr>
+              <td class="mono">{{ order.order_number }}</td>
+              <td>{{ order.created_at.strftime('%d %b %Y') }}</td>
+              <td>{{ order.item_count }}</td>
+              <td>{{ currency }}{{ order.total }}</td>
+              <td><span class="badge badge-status">{{ order.status_label }}</span></td>
+              <td>
+                <a href="{{ url_for('storefront.order_detail', order_number=order.order_number) }}" class="btn btn-outline btn-sm">Track</a>
+                {% if order.status in ['placed', 'confirmed'] %}
+                <form method="POST" action="{{ url_for('storefront.order_cancel', order_number=order.order_number) }}"
+                      onsubmit="return confirm('Cancel this order? This cannot be undone.');" style="display:inline;">
+                  <button type="submit" class="btn btn-outline btn-sm" style="border-color:#c0392b; color:#c0392b;">Cancel</button>
+                </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h3>No orders yet</h3>
+      <a href="{{ url_for('storefront.shop') }}" class="btn btn-dark">Start shopping</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

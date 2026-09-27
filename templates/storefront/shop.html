@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Shop parts &amp; accessories — AutoMart{% endblock %}
+{% block content %}
+<div class="container section">
+  <h2>
+    {% if selected_vehicle %}
+      {% for code, label in vehicle_types %}{% if code == selected_vehicle %}{{ label }}{% endif %}{% endfor %}
+    {% else %}All Products{% endif %}
+    {% if q %} — results for "{{ q }}"{% endif %}
+  </h2>
+
+  <div class="filter-rail">
+    <a href="{{ url_for('storefront.shop', vehicle_type=selected_vehicle, sort=sort) }}" class="filter-pill {% if not selected_category %}active{% endif %}">All Categories</a>
+    {% for code, label in categories %}
+      <a href="{{ url_for('storefront.shop', vehicle_type=selected_vehicle, category=code, sort=sort) }}" class="filter-pill {% if selected_category == code %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+    <span style="flex:1;"></span>
+    <form method="get" style="display:flex; align-items:center; gap:8px;">
+      {% if selected_vehicle %}<input type="hidden" name="vehicle_type" value="{{ selected_vehicle }}">{% endif %}
+      {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+      {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+      <select name="sort" onchange="this.form.submit()" style="width:auto; padding:8px 10px;">
+        <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Most popular</option>
+        <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
+        <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+        <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+      </select>
+    </form>
+  </div>
+
+  {% if products %}
+    <div class="product-grid">
+      {% for p in products %}
+        {% include "storefront/_product_card.html" %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h3>No products match those filters</h3>
+      <p>Try a different vehicle type or category.</p>
+      <a href="{{ url_for('storefront.shop') }}" class="btn btn-outline">Clear filters</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

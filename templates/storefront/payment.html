@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Payment — AutoMart{% endblock %}
+{% block content %}
+<div class="container section">
+  <h2>Payment</h2>
+  <div class="checkout-grid">
+    <form method="post" id="payment-form">
+      <input type="hidden" name="method" id="selected-method" value="upi">
+
+      <div class="pay-method-tabs">
+        <div class="pay-method-tab active" data-method="upi">UPI</div>
+        <div class="pay-method-tab" data-method="card">Debit Card</div>
+        <div class="pay-method-tab" data-method="credit_card">Credit Card</div>
+        {% if emi_options %}<div class="pay-method-tab" data-method="emi">EMI</div>{% endif %}
+        <div class="pay-method-tab" data-method="cod">Cash on Delivery</div>
+        {% if credit_eligible %}<div class="pay-method-tab" data-method="credit_terms">Business Credit</div>{% endif %}
+      </div>
+
+      <div class="card" style="padding:22px;">
+
+        <div class="pay-panel active" id="panel-upi">
+          <div class="form-group">
+            <label>UPI ID</label>
+            <input type="text" name="upi_id" placeholder="yourname@bank">
+          </div>
+          <p class="muted" style="font-size:0.8rem;">You'll get a simulated payment prompt — no real money moves in this demo build.</p>
+        </div>
+
+        <div class="pay-panel" id="panel-card">
+          <div class="form-group"><label>Card number</label><input type="text" name="card_number" placeholder="4242 4242 4242 4242" maxlength="19"></div>
+          <div class="form-row">
+            <div class="form-group"><label>Expiry</label><input type="text" placeholder="MM/YY"></div>
+            <div class="form-group"><label>CVV</label><input type="text" placeholder="123" maxlength="3"></div>
+          </div>
+        </div>
+
+        <div class="pay-panel" id="panel-credit_card">
+          <div class="form-group"><label>Credit card number</label><input type="text" name="card_number" placeholder="4242 4242 4242 4242" maxlength="19"></div>
+          <div class="form-row">
+            <div class="form-group"><label>Expiry</label><input type="text" placeholder="MM/YY"></div>
+            <div class="form-group"><label>CVV</label><input type="text" placeholder="123" maxlength="3"></div>
+          </div>
+        </div>
+
+        {% if emi_options %}
+        <div class="pay-panel" id="panel-emi">
+          <p class="muted" style="font-size:0.85rem; margin-bottom:12px;">Pay via your credit card's EMI facility. Choose a tenure:</p>
+          {% for opt in emi_options %}
+            <label class="emi-option">
+              <span><input type="radio" name="emi_tenure" value="{{ opt.tenure }}" {% if loop.first %}checked{% endif %}> {{ opt.tenure }} months</span>
+              <span>{{ currency }}{{ opt.monthly }}/mo <span class="muted">(total {{ currency }}{{ opt.total }})</span></span>
+            </label>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="pay-panel" id="panel-cod">
+          <p class="muted" style="font-size:0.85rem;">Pay in cash when your order arrives. Available on all orders under {{ currency }}20,000.</p>
+        </div>
+
+        {% if credit_eligible %}
+        <div class="pay-panel" id="panel-credit_terms">
+          <p class="muted" style="font-size:0.85rem;">Invoice this order to <strong>{{ current_user.company_name or current_user.name }}</strong> with 30-day payment terms.</p>
+          <div class="summary-line"><span>Available credit</span><span>{{ currency }}{{ current_user.credit_available }}</span></div>
+          <div class="summary-line"><span>This order</span><span>{{ currency }}{{ total }}</span></div>
+        </div>
+        {% endif %}
+
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="margin-top:20px;">Pay {{ currency }}{{ total }}</button>
+    </form>
+
+    <div class="card summary-card" style="padding:20px;">
+      <h3>Order summary</h3>
+      <div class="summary-line"><span>Subtotal</span><span>{{ currency }}{{ subtotal }}</span></div>
+      <div class="summary-line"><span>Delivery</span><span>{{ 'Free' if delivery_fee == 0 else currency ~ delivery_fee }}</span></div>
+      <div class="summary-line total"><span>Total</span><span>{{ currency }}{{ total }}</span></div>
+      <p class="muted" style="font-size:0.78rem; margin-top:14px;">Delivering to: {{ checkout_info.address }}</p>
+    </div>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/checkout.js') }}"></script>
+{% endblock %}

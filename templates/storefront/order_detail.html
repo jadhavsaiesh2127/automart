@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Order {{ order.order_number }} — AutoMart{% endblock %}
+{% block content %}
+<div class="container section">
+  <a href="{{ url_for('storefront.my_orders') }}" class="muted" style="font-size:0.85rem;">← All orders</a>
+  <h2 class="mono" style="margin-top:8px;">{{ order.order_number }}</h2>
+
+  {% if order.status != 'cancelled' %}
+  <div class="tracker">
+    {% set steps = ['placed', 'confirmed', 'packed', 'out_for_delivery', 'delivered'] %}
+    {% set current_index = steps.index(order.status) if order.status in steps else 0 %}
+    {% for step in steps %}
+      <div class="tracker-step {% if loop.index0 < current_index %}done{% elif loop.index0 == current_index %}current{% endif %}">
+        <div class="dot"></div>
+        <div class="lbl">{{ step.replace('_',' ')|title }}</div>
+      </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="badge badge-red" style="margin:16px 0;">Cancelled</p>
+  {% endif %}
+
+  {% if order.status in ['placed', 'confirmed'] %}
+    <form method="POST" action="{{ url_for('storefront.order_cancel', order_number=order.order_number) }}"
+          onsubmit="return confirm('Cancel this order? This cannot be undone.');" style="margin:8px 0 16px;">
+      <button type="submit" class="btn btn-outline btn-sm" style="border-color:#c0392b; color:#c0392b;">Cancel order</button>
+    </form>
+  {% endif %}
+
+  <div class="two-col">
+    <div class="card" style="padding:20px;">
+      <h3>Items</h3>
+      {% for item in order.items %}
+        <div class="summary-line"><span>{{ item.product_name }} × {{ item.quantity }}</span><span>{{ currency }}{{ item.line_total }}</span></div>
+      {% endfor %}
+      <div class="summary-line"><span>Delivery</span><span>{{ 'Free' if order.delivery_fee == 0 else currency ~ order.delivery_fee }}</span></div>
+      <div class="summary-line total"><span>Total</span><span>{{ currency }}{{ order.total }}</span></div>
+    </div>
+    <div class="card" style="padding:20px;">
+      <h3>Delivery &amp; payment</h3>
+      <p class="muted" style="font-size:0.85rem;">{{ order.delivery_address }}</p>
+      <p style="font-size:0.85rem;"><strong>{{ order.delivery_type|title }}</strong> delivery</p>
+      {% if order.payment %}
+        <p style="font-size:0.85rem;">Paid via <strong>{{ order.payment.method_label }}</strong>{% if order.payment.instrument_label %} · {{ order.payment.instrument_label }}{% endif %}</p>
+        {% if order.payment.transaction_id %}<p class="mono muted" style="font-size:0.78rem;">Txn {{ order.payment.transaction_id }}</p>{% endif %}
+      {% endif %}
+      {% if order.is_credit_order %}
+        <p class="badge badge-green">Net 30 · due {{ order.credit_due_date.strftime('%d %b %Y') }}{% if order.credit_settled %} · Settled{% endif %}</p>
+      {% endif %}
+      {% if order.po_number %}<p class="mono muted" style="font-size:0.78rem;">PO {{ order.po_number }}</p>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

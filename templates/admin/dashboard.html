@@ -1,0 +1,91 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard — AutoMart Admin{% endblock %}
+{% block content %}
+<div class="admin-topline">
+  <div>
+    <h2>Dashboard</h2>
+    <p class="muted" style="margin-top:4px;">Manage products, spare parts, orders and customers.</p>
+  </div>
+  <a href="{{ url_for('admin.parts') }}" class="btn btn-primary">Manage Spare Parts →</a>
+  {% if pending_business_verification %}
+    <a href="{{ url_for('admin.customers', type='business') }}" class="badge badge-express" style="font-size:0.82rem; padding:8px 14px;">{{ pending_business_verification }} business account(s) awaiting verification →</a>
+  {% endif %}
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="num">{{ currency }}{{ '{:,}'.format(revenue_30d) }}</div><div class="label">Revenue (30 days)</div></div>
+  <div class="stat-card"><div class="num">{{ order_count_30d }}</div><div class="label">Orders (30 days)</div></div>
+  <div class="stat-card"><div class="num">{{ pending_orders }}</div><div class="label">Orders in progress</div></div>
+  <div class="stat-card"><div class="num">{{ total_products }}</div><div class="label">Active listings</div></div>
+</div>
+
+<div class="stat-grid" style="grid-template-columns: repeat(3, 1fr);">
+  <div class="stat-card"><div class="num">{{ currency }}{{ '{:,}'.format(b2c_revenue_30d) }}</div><div class="label">B2C revenue (30d)</div></div>
+  <div class="stat-card"><div class="num">{{ currency }}{{ '{:,}'.format(b2b_revenue_30d) }}</div><div class="label">B2B revenue (30d)</div></div>
+  <div class="stat-card"><div class="num">{{ currency }}{{ '{:,}'.format(outstanding_credit) }}</div><div class="label">Outstanding Net-30 credit</div></div>
+</div>
+
+
+<div class="admin-parts-showcase">
+  <div class="admin-parts-showcase-head">
+    <div>
+      <h3>Spare Parts</h3>
+      <p class="muted">Quick view of the latest parts in your catalog.</p>
+    </div>
+    <a href="{{ url_for('admin.parts') }}" class="btn btn-outline btn-sm">View all parts →</a>
+  </div>
+  <div class="admin-parts-grid">
+    {% for p in featured_parts %}
+      {% set img = p.part_image_filename %}
+      <a class="admin-part-tile" href="{{ url_for('admin.part_edit', part_id=p.id) }}">
+        <div class="admin-part-image"><img src="{{ url_for('static', filename='images/parts/' ~ img) }}" alt="{{ p.name }}"></div>
+        <div class="admin-part-tile-body">
+          <strong>{{ p.name }}</strong>
+          <span>{{ p.brand or p.vehicle_label }} · {{ currency }}{{ p.price }}</span>
+          <small>{{ p.stock }} in stock</small>
+        </div>
+      </a>
+    {% else %}
+      <div class="muted" style="padding:20px;">No spare parts have been added yet.</div>
+    {% endfor %}
+  </div>
+  <div class="admin-parts-banner">
+    <img src="{{ url_for('static', filename='images/parts/parts-banner.jpg') }}" alt="AutoMart spare parts collection">
+    <div class="admin-parts-banner-copy">
+      <strong>Premium spare parts for every drive</strong>
+      <span>Manage your parts catalog from one place.</span>
+    </div>
+    <a href="{{ url_for('admin.part_new') }}" class="btn btn-primary btn-sm">+ Add New Part</a>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="card" style="padding:20px;">
+    <h3>Recent orders</h3>
+    <table>
+      <thead><tr><th>Order</th><th>Type</th><th>Total</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for order in recent_orders %}
+          <tr>
+            <td><a href="{{ url_for('admin.order_detail', order_number=order.order_number) }}" class="mono">{{ order.order_number }}</a></td>
+            <td>{{ 'B2B' if order.order_type == 'b2b' else 'B2C' }}</td>
+            <td>{{ currency }}{{ order.total }}</td>
+            <td><span class="badge badge-status">{{ order.status_label }}</span></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4" class="muted">No orders yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="padding:20px;">
+    <h3>Low stock</h3>
+    {% for p in low_stock %}
+      <div class="summary-line"><span>{{ p.name }}</span><span class="badge badge-red">{{ p.stock }} left</span></div>
+    {% else %}
+      <p class="muted">Stock levels look healthy.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

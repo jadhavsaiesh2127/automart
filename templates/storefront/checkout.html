@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Checkout — AutoMart{% endblock %}
+{% block content %}
+<div class="container section">
+  <h2>Checkout</h2>
+  <div class="checkout-grid">
+    <form method="post">
+      <div class="card" style="padding:22px; margin-bottom:20px;">
+        <h3>Delivery address</h3>
+        <div class="form-group">
+          <label>Address</label>
+          <input type="text" name="address" value="{{ user.address_line or '' }}" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>City</label><input type="text" name="city" value="{{ user.city or '' }}" required></div>
+          <div class="form-group"><label>State</label><input type="text" name="state" value="{{ user.state or '' }}"></div>
+        </div>
+        <div class="form-group" style="max-width:200px;">
+          <label>Pincode</label>
+          <input type="text" name="pincode" value="{{ user.pincode or '' }}" required>
+        </div>
+        {% if current_user.is_business %}
+          <div class="form-group">
+            <label>PO / reference number (optional)</label>
+            <input type="text" name="po_number" placeholder="e.g. PO-4471">
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="card" style="padding:22px;">
+        <h3>Delivery speed</h3>
+        {% if all_express %}
+          <label class="emi-option">
+            <span><input type="radio" name="delivery_type" value="express" data-fee="49" checked> ⚡ 1-Hour Express — {{ currency }}49</span>
+          </label>
+          <label class="emi-option">
+            <span><input type="radio" name="delivery_type" value="standard" data-fee="0"> Standard (2–3 days) — Free</span>
+          </label>
+        {% else %}
+          <p class="muted" style="font-size:0.85rem;">One or more items in your cart don't qualify for Express delivery (over the lightweight limit). Your order will ship via Standard delivery.</p>
+          <input type="hidden" name="delivery_type" value="standard">
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="margin-top:20px;">Continue to payment</button>
+    </form>
+
+    <div class="card summary-card" style="padding:20px;">
+      <h3>Order summary</h3>
+      {% for item in items %}
+        <div class="summary-line"><span>{{ item.product.name }} × {{ item.quantity }}</span><span>{{ currency }}{{ item.line_total_for(current_user.account_type) }}</span></div>
+      {% endfor %}
+      <div class="summary-line"><span id="subtotal-value" data-value="{{ subtotal }}">Subtotal</span><span>{{ currency }}{{ subtotal }}</span></div>
+      <div class="summary-line"><span>Delivery</span><span id="delivery-fee-display">{{ 'Free' if not all_express else currency ~ '49' }}</span></div>
+      <div class="summary-line total"><span>Total</span><span id="total-display">{{ currency }}{{ subtotal + (49 if all_express else 0) }}</span></div>
+    </div>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/checkout.js') }}"></script>
+{% endblock %}

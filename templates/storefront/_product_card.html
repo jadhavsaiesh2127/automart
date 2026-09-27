@@ -1,0 +1,51 @@
+<div class="product-card">
+  <a href="{{ url_for('storefront.product_detail', slug=p.slug) }}" class="thumb">
+    {% if p.category == 'parts' %}
+      {% if p.image_url and p.image_url.startswith('images/') %}
+        <img src="{{ url_for('static', filename=p.image_url) }}" alt="{{ p.name }}" loading="lazy">
+      {% elif p.image_url and 'parts-banner.jpg' not in p.image_url %}
+        <img src="{{ p.image_url }}" alt="{{ p.name }}" loading="lazy">
+      {% else %}
+        {% set img = p.part_image_filename %}
+        <img src="{{ url_for('static', filename='images/parts/' ~ img) }}" alt="{{ p.name }}" loading="lazy">
+      {% endif %}
+    {% elif p.image_url %}
+      {% if p.image_url.startswith('images/') %}
+        <img src="{{ url_for('static', filename=p.image_url) }}" alt="{{ p.name }}" loading="lazy">
+      {% else %}
+        <img src="{{ p.image_url }}" alt="{{ p.name }}" loading="lazy">
+      {% endif %}
+    {% endif %}
+  </a>
+  <div class="body">
+    <span class="brand">{{ p.brand or p.vehicle_label }}</span>
+    <a href="{{ url_for('storefront.product_detail', slug=p.slug) }}" class="name">{{ p.name }}</a>
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      {% if p.is_express_eligible %}
+        <span class="badge badge-express">⚡ 1-Hr Express</span>
+      {% endif %}
+      {% if current_user.is_authenticated and current_user.is_business and p.has_bulk_pricing %}
+        <span class="badge badge-green">Bulk from {{ currency }}{{ p.bulk_price }}</span>
+      {% endif %}
+      {% if not p.in_stock %}
+        <span class="badge badge-red">Out of stock</span>
+      {% endif %}
+    </div>
+    <div class="price-row">
+      <span class="price">{{ currency }}{{ p.price }}</span>
+      {% if p.mrp and p.mrp > p.price %}
+        <span class="mrp">{{ currency }}{{ p.mrp }}</span>
+        <span class="discount">{{ p.discount_percent }}% off</span>
+      {% endif %}
+    </div>
+    {% if current_user.is_authenticated %}
+      <form method="post" action="{{ url_for('storefront.cart_add') }}" data-ajax-cart-form>
+        <input type="hidden" name="product_id" value="{{ p.id }}">
+        <input type="hidden" name="quantity" value="1">
+        <button type="submit" class="btn btn-dark btn-sm btn-block" {% if not p.in_stock %}disabled{% endif %}>Add to cart</button>
+      </form>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-sm btn-block">Sign in to buy</a>
+    {% endif %}
+  </div>
+</div>

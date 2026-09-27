@@ -1,0 +1,73 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ 'Edit' if product else 'Add' }} product — AutoMart Admin{% endblock %}
+{% block content %}
+<div class="admin-topline">
+  <h2>{{ 'Edit product' if product else 'Add product' }}</h2>
+  <a href="{{ url_for('admin.products') }}" class="btn btn-outline">← Back to products</a>
+</div>
+
+<form method="post" class="card" style="padding:24px; max-width:760px;">
+  <div class="form-group">
+    <label>Product name</label>
+    <input type="text" name="name" value="{{ product.name if product else '' }}" required>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Vehicle type</label>
+      <select name="vehicle_type" required>
+        {% for code, label in vehicle_types %}
+          <option value="{{ code }}" {% if product and product.vehicle_type == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select name="category" required>
+        {% for code, label in categories %}
+          <option value="{{ code }}" {% if product and product.category == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group"><label>Brand</label><input type="text" name="brand" value="{{ product.brand if product else '' }}"></div>
+    <div class="form-group"><label>Subcategory (e.g. Brakes, Filters)</label><input type="text" name="subcategory" value="{{ product.subcategory if product else '' }}"></div>
+  </div>
+
+  <div class="form-group">
+    <label>Description</label>
+    <textarea name="description" rows="3">{{ product.description if product else '' }}</textarea>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group"><label>Retail price ({{ currency }})</label><input type="number" name="price" value="{{ product.price if product else '' }}" required></div>
+    <div class="form-group"><label>MRP / strike-through price ({{ currency }})</label><input type="number" name="mrp" value="{{ product.mrp if product else '' }}"></div>
+  </div>
+
+  <div class="card" style="padding:16px; background:var(--paper-2); border-style:dashed; margin-bottom:16px;">
+    <strong style="font-size:0.85rem;">B2B bulk pricing (optional)</strong>
+    <div class="form-row" style="margin-top:10px;">
+      <div class="form-group"><label>Bulk unit price ({{ currency }})</label><input type="number" name="bulk_price" value="{{ product.bulk_price if product and product.bulk_price else '' }}"></div>
+      <div class="form-group"><label>Minimum quantity for bulk price</label><input type="number" name="bulk_min_qty" value="{{ product.bulk_min_qty if product and product.bulk_min_qty else '' }}"></div>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group"><label>Stock</label><input type="number" name="stock" value="{{ product.stock if product else 0 }}" required></div>
+    <div class="form-group">
+      <label>Weight (grams)</label>
+      <input type="number" name="weight_grams" value="{{ product.weight_grams if product else 500 }}" required>
+    </div>
+  </div>
+  <p class="muted" style="font-size:0.78rem; margin-top:-8px;">Items at or under 5000g qualify automatically for 1-Hour Express delivery.</p>
+
+  <div class="form-group">
+    <label>Image URL (optional)</label>
+    <input type="text" name="image_url" value="{{ product.image_url if product else '' }}" placeholder="https://...">
+  </div>
+
+  <button type="submit" class="btn btn-primary">{{ 'Save changes' if product else 'Add product' }}</button>
+</form>
+{% endblock %}

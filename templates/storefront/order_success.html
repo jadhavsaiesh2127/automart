@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Order confirmed — AutoMart{% endblock %}
+{% block content %}
+<div class="container section">
+  <div class="card" style="max-width:640px; margin:0 auto; padding:36px; text-align:center;">
+    <div style="font-size:2.4rem; margin-bottom:8px;">✅</div>
+    <h2>Order confirmed</h2>
+    <p class="muted">Order <span class="mono">{{ order.order_number }}</span> has been placed{% if order.delivery_type == 'express' %} for 1-Hour Express delivery{% endif %}.</p>
+
+    {% if order.is_credit_order %}
+      <p class="badge badge-green" style="margin:12px auto;">Net 30 credit · due {{ order.credit_due_date.strftime('%d %b %Y') }}</p>
+    {% endif %}
+
+    <div class="card" style="text-align:left; padding:18px 20px; margin:20px 0; background:var(--paper-2); border:none;">
+      {% for item in order.items %}
+        <div class="summary-line"><span>{{ item.product_name }} × {{ item.quantity }}</span><span>{{ currency }}{{ item.line_total }}</span></div>
+      {% endfor %}
+      <div class="summary-line total"><span>Total</span><span>{{ currency }}{{ order.total }}</span></div>
+    </div>
+
+    <p class="muted" style="font-size:0.85rem;">Delivering to: {{ order.delivery_address }}</p>
+
+    <div style="display:flex; gap:12px; justify-content:center; margin-top:20px;">
+      <a href="{{ url_for('storefront.order_detail', order_number=order.order_number) }}" class="btn btn-dark">Track this order</a>
+      <a href="{{ url_for('storefront.shop') }}" class="btn btn-outline">Continue shopping</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

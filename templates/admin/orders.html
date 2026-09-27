@@ -1,0 +1,35 @@
+{% extends "admin/base.html" %}
+{% block title %}Orders — AutoMart Admin{% endblock %}
+{% block content %}
+<div class="admin-topline">
+  <h2>Orders</h2>
+</div>
+
+<div class="filter-rail">
+  <a href="{{ url_for('admin.orders') }}" class="filter-pill {% if not status_filter %}active{% endif %}">All</a>
+  {% for s in statuses %}
+    <a href="{{ url_for('admin.orders', status=s) }}" class="filter-pill {% if status_filter == s %}active{% endif %}">{{ s.replace('_',' ')|title }}</a>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <table>
+    <thead><tr><th>Order</th><th>Customer</th><th>Type</th><th>Total</th><th>Payment</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for order in orders %}
+        <tr>
+          <td class="mono">{{ order.order_number }}</td>
+          <td>{{ order.customer.name }}{% if order.customer.is_business %}<br><span class="muted" style="font-size:0.76rem;">{{ order.customer.company_name }}</span>{% endif %}</td>
+          <td>{{ 'B2B' if order.order_type == 'b2b' else 'B2C' }}</td>
+          <td>{{ currency }}{{ order.total }}</td>
+          <td>{% if order.payment %}{{ order.payment.method_label }}{% endif %}</td>
+          <td><span class="badge badge-status">{{ order.status_label }}</span></td>
+          <td><a href="{{ url_for('admin.order_detail', order_number=order.order_number) }}" class="btn btn-outline btn-sm">Manage</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="muted">No orders found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

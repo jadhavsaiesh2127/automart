@@ -1,0 +1,128 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ 'Edit' if part else 'Add' }} spare part — AutoMart Admin{% endblock %}
+{% block content %}
+<div class="admin-topline">
+  <div>
+    <h2>{{ 'Edit spare part' if part else 'Add new spare part' }}</h2>
+    <p class="muted" style="margin-top:4px;">{{ 'Update the part details below.' if part else 'Create a new part listing for the AutoMart storefront.' }}</p>
+  </div>
+  <a href="{{ url_for('admin.parts') }}" class="btn btn-outline">← Back to parts</a>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="card" style="padding:24px; max-width:800px;">
+  <div class="form-group">
+    <label>Part name</label>
+    <input type="text" name="name" value="{{ part.name if part else '' }}"
+           placeholder="e.g. Front Brake Pad Set" required>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Vehicle type</label>
+      <select name="vehicle_type" required>
+        {% for code, label in vehicle_types %}
+          <option value="{{ code }}" {% if part and part.vehicle_type == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Part category</label>
+      <input type="text" name="subcategory" value="{{ part.subcategory if part else '' }}"
+             placeholder="e.g. Brakes, Engine, Filters" required>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Brand / Manufacturer</label>
+      <input type="text" name="brand" value="{{ part.brand if part else '' }}"
+             placeholder="e.g. Bosch">
+    </div>
+    <div class="form-group">
+      <label>Stock quantity</label>
+      <input type="number" name="stock" min="0" value="{{ part.stock if part else 0 }}" required>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Description</label>
+    <textarea name="description" rows="4" placeholder="Describe compatibility, material, specifications, etc.">{{ part.description if part else '' }}</textarea>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Selling price ({{ currency }})</label>
+      <input type="number" name="price" min="0" value="{{ part.price if part else '' }}" required>
+    </div>
+    <div class="form-group">
+      <label>MRP ({{ currency }})</label>
+      <input type="number" name="mrp" min="0" value="{{ part.mrp if part and part.mrp else '' }}">
+    </div>
+  </div>
+
+  <div class="card" style="padding:16px; background:var(--paper-2); border-style:dashed; margin-bottom:16px;">
+    <strong style="font-size:0.85rem;">B2B bulk pricing (optional)</strong>
+    <div class="form-row" style="margin-top:10px;">
+      <div class="form-group">
+        <label>Bulk unit price ({{ currency }})</label>
+        <input type="number" name="bulk_price" min="0" value="{{ part.bulk_price if part and part.bulk_price else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Minimum bulk quantity</label>
+        <input type="number" name="bulk_min_qty" min="1" value="{{ part.bulk_min_qty if part and part.bulk_min_qty else '' }}">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Weight (grams)</label>
+    <input type="number" name="weight_grams" min="1" value="{{ part.weight_grams if part else 500 }}" required>
+    <p class="muted" style="font-size:0.78rem;">Parts at or under the configured weight limit qualify for express delivery.</p>
+  </div>
+
+  <div class="form-group">
+    <label>Part image</label>
+    <div style="border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--paper-2);">
+      <input type="file" name="part_image" id="part-image" accept="image/png,image/jpeg,image/webp">
+      <p class="muted" style="font-size:0.78rem; margin:7px 0 0;">Upload PNG, JPG, JPEG or WEBP (maximum 8 MB). Your uploaded image takes priority over the automatic catalog image.</p>
+      <div id="part-image-preview" style="margin-top:12px; width:190px; height:135px; border:1px solid var(--line); border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+        {% if part %}
+          <img src="{{ url_for('static', filename=part.image_url) if part.image_url and part.image_url.startswith('images/') else (part.image_url if part.image_url and 'parts-banner.jpg' not in part.image_url else url_for('static', filename='images/parts/' ~ part.part_image_filename)) }}" alt="{{ part.name }}" style="max-width:100%; max-height:100%; object-fit:contain; padding:8px;">
+        {% else %}
+          <span class="muted" style="font-size:0.8rem;">Image preview</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Image URL (optional alternative)</label>
+    <input type="url" name="image_url"
+           value="{{ part.image_url if part and part.image_url and not part.image_url.startswith('images/') else '' }}"
+           placeholder="https://...">
+    <p class="muted" style="font-size:0.78rem; margin-top:6px;">Use either an uploaded image or an external image URL. If both are supplied, the uploaded image is used.</p>
+  </div>
+
+  <script>
+    document.getElementById('part-image')?.addEventListener('change', function () {
+      const preview = document.getElementById('part-image-preview');
+      const file = this.files && this.files[0];
+      if (!file) return;
+      if (file.size > 8 * 1024 * 1024) {
+        alert('Image must be 8 MB or smaller.');
+        this.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = e => {
+        preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" style="max-width:100%; max-height:100%; object-fit:contain; padding:8px;">';
+      };
+      reader.readAsDataURL(file);
+    });
+  </script>
+
+  <button type="submit" class="btn btn-primary">
+    {{ 'Save changes' if part else 'Add part to site' }}
+  </button>
+</form>
+{% endblock %}

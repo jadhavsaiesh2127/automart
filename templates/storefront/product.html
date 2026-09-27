@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} — AutoMart{% endblock %}
+{% block content %}
+<div class="container section">
+  <div style="display:grid; grid-template-columns: 1fr 1.2fr; gap:40px; align-items:start;">
+    <div class="thumb card" style="aspect-ratio:1/1;">
+      {% if product.category == 'parts' %}
+        {% if product.image_url and product.image_url.startswith('images/') %}
+          <img src="{{ url_for('static', filename=product.image_url) }}" alt="{{ product.name }}">
+        {% elif product.image_url and 'parts-banner.jpg' not in product.image_url %}
+          <img src="{{ product.image_url }}" alt="{{ product.name }}">
+        {% else %}
+          <img src="{{ url_for('static', filename='images/parts/' ~ product.part_image_filename) }}" alt="{{ product.name }}">
+        {% endif %}
+      {% elif product.image_url %}
+        {% if product.image_url.startswith('images/') %}
+          <img src="{{ url_for('static', filename=product.image_url) }}" alt="{{ product.name }}">
+        {% else %}
+          <img src="{{ product.image_url }}" alt="{{ product.name }}">
+        {% endif %}
+      {% else %}
+        <div style="display:flex; align-items:center; justify-content:center; height:100%; font-size:4rem;">🔩</div>
+      {% endif %}
+    </div>
+
+    <div>
+      <span class="brand muted" style="text-transform:uppercase; font-size:0.78rem; letter-spacing:0.04em;">{{ product.brand or "AutoMart" }} · {{ product.vehicle_label }}</span>
+      <h1 style="margin-top:6px;">{{ product.name }}</h1>
+      <p class="mono muted" style="font-size:0.8rem;">SKU {{ product.sku }} {% if product.subcategory %}· {{ product.subcategory }}{% endif %}</p>
+
+      <div style="display:flex; gap:8px; margin:14px 0;">
+        {% if product.is_express_eligible %}<span class="badge badge-express">⚡ {{ product.delivery_label }}</span>{% endif %}
+        {% if not product.is_express_eligible %}<span class="badge badge-standard">{{ product.delivery_label }}</span>{% endif %}
+        {% if product.in_stock %}<span class="badge badge-green">In stock ({{ product.stock }})</span>{% else %}<span class="badge badge-red">Out of stock</span>{% endif %}
+      </div>
+
+      <div class="price-row" style="margin-bottom:16px;">
+        <span class="price" style="font-size:2.2rem;">{{ currency }}{{ product.price }}</span>
+        {% if product.mrp and product.mrp > product.price %}
+          <span class="mrp">{{ currency }}{{ product.mrp }}</span>
+          <span class="discount">{{ product.discount_percent }}% off</span>
+        {% endif %}
+      </div>
+
+      {% if product.has_bulk_pricing %}
+      <div class="card" style="padding:14px 16px; background:var(--paper-2); border-style:dashed; margin-bottom:20px;">
+        <strong style="font-size:0.85rem;">Bulk pricing for business accounts</strong>
+        <p class="muted" style="font-size:0.82rem; margin:4px 0 0;">
+          Order {{ product.bulk_min_qty }}+ units as a verified business account and pay {{ currency }}{{ product.bulk_price }}/unit instead of {{ currency }}{{ product.price }}.
+          {% if not current_user.is_authenticated %}<a href="{{ url_for('auth.register') }}" style="color:var(--amber-dark); font-weight:600;">Open a business account</a>{% endif %}
+        </p>
+      </div>
+      {% endif %}
+
+      {% if product.description %}<p>{{ product.description }}</p>{% endif %}
+
+      {% if current_user.is_authenticated %}
+        <form method="post" action="{{ url_for('storefront.cart_add') }}" style="display:flex; gap:10px; margin-top:20px;">
+          <input type="hidden" name="product_id" value="{{ product.id }}">
+          <input type="number" name="quantity" value="1" min="1" style="width:90px;">
+          <button type="submit" class="btn btn-primary" {% if not product.in_stock %}disabled{% endif %}>Add to cart</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary" style="margin-top:20px;">Sign in to buy</a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if related %}
+  <section class="section">
+    <h3>Compatible with the same vehicle type</h3>
+    <div class="product-grid">
+      {% for p in related %}{% include "storefront/_product_card.html" %}{% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

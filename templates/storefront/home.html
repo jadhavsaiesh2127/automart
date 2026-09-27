@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="delivery-promise">⚡ 1-Hour Express delivery on lightweight parts &amp; accessories, across India</div>
+      <h1>Parts for every vehicle on the road — car to truck.</h1>
+      <p class="lead">Genuine and OEM-compatible spares and accessories for cars, bikes, scooters, EVs, auto-rickshaws, tempos, and small trucks. Retail pricing for individuals, tiered bulk pricing and Net 30 credit for garages, fleets, and distributors.</p>
+      <div style="display:flex; gap:12px; margin-top:24px;">
+        <a href="{{ url_for('storefront.shop') }}" class="btn btn-primary">Browse the catalog</a>
+        {% if not current_user.is_authenticated %}
+          <a href="{{ url_for('auth.register') }}" class="btn btn-outline" style="color:#fff; border-color:#454c56;">Open a business account</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="pegboard">
+      <a href="{{ url_for('storefront.shop', category='parts') }}" class="peg-tile">
+        <div class="icon">🔧</div>
+        <div class="label">Spare Parts</div>
+        <div class="sub">Brakes, filters, batteries, lighting &amp; more</div>
+      </a>
+      <a href="{{ url_for('storefront.shop', category='accessories') }}" class="peg-tile">
+        <div class="icon">🧰</div>
+        <div class="label">Accessories</div>
+        <div class="sub">Covers, mats, mounts, maintenance kits</div>
+      </a>
+      <a href="{{ url_for('storefront.shop', vehicle_type='ev') }}" class="peg-tile">
+        <div class="icon">🔋</div>
+        <div class="label">EV Vehicles</div>
+        <div class="sub">Chargers, battery packs, controllers</div>
+      </a>
+      <a href="{{ url_for('storefront.shop', vehicle_type='auto_rickshaw') }}" class="peg-tile">
+        <div class="icon">🛺</div>
+        <div class="label">Auto-Rickshaw</div>
+        <div class="sub">Clutch plates, tyres, seat covers</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+
+  <section class="section">
+    <div class="section-head">
+      <h2>1-Hour Express picks</h2>
+      <a href="{{ url_for('storefront.shop') }}">View all →</a>
+    </div>
+    <div class="product-grid">
+      {% for p in express_picks %}
+        {% include "storefront/_product_card.html" %}
+      {% else %}
+        <p class="muted">Express items will appear here once the catalog is stocked.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="section-head">
+      <h2>Top rated across all vehicles</h2>
+      <a href="{{ url_for('storefront.shop') }}">View all →</a>
+    </div>
+    <div class="product-grid">
+      {% for p in featured %}
+        {% include "storefront/_product_card.html" %}
+      {% else %}
+        <p class="muted">No products yet — check back soon.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="card" style="padding:32px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; background:var(--paper-2); border:none;">
+      <div>
+        <h3 style="margin-bottom:6px;">Run a garage, fleet, or retail shop?</h3>
+        <p class="muted" style="margin:0; max-width:52ch;">Business accounts get automatic tiered pricing on bulk orders, and verified accounts can check out on Net 30 credit terms with GST invoicing.</p>
+      </div>
+      {% if current_user.is_authenticated and current_user.is_business %}
+        <span class="badge badge-green">Business account {{ '· Credit verified' if current_user.business_verified else '· Verification pending' }}</span>
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-dark">Open a business account</a>
+      {% endif %}
+    </div>
+  </section>
+
+</div>
+{% endblock %}

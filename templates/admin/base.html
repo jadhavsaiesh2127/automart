@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin — AutoMart{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack" id="flash-stack">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="logo">AutoMart<span class="dot">.</span> <span style="font-size:0.7rem; color:#9aa1ab; font-family:'Inter';">ADMIN</span></div>
+      <nav class="admin-nav">
+        <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if request.endpoint=='admin.dashboard' }}">Dashboard</a>
+        <a href="{{ url_for('admin.products') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('admin.product') }}">Products</a>
+        <a href="{{ url_for('admin.parts') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('admin.part') }}">Spare Parts</a>
+        <a href="{{ url_for('admin.orders') }}" class="{{ 'active' if request.endpoint and 'order' in request.endpoint and request.endpoint.startswith('admin.') }}">Orders</a>
+        <a href="{{ url_for('admin.customers') }}" class="{{ 'active' if request.endpoint=='admin.customers' }}">Customers</a>
+        <a href="{{ url_for('storefront.home') }}" style="margin-top:20px; border-top:1px solid var(--line-dark); padding-top:16px;">View storefront →</a>
+        <a href="{{ url_for('auth.logout') }}">Sign out</a>
+      </nav>
+    </aside>
+    <main class="admin-main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

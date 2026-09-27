@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %}
+{% block title %}Customers — AutoMart Admin{% endblock %}
+{% block content %}
+<div class="admin-topline">
+  <h2>Customers</h2>
+</div>
+
+<div class="filter-rail">
+  <a href="{{ url_for('admin.customers') }}" class="filter-pill {% if not filter_type %}active{% endif %}">All</a>
+  <a href="{{ url_for('admin.customers', type='individual') }}" class="filter-pill {% if filter_type == 'individual' %}active{% endif %}">Individual (B2C)</a>
+  <a href="{{ url_for('admin.customers', type='business') }}" class="filter-pill {% if filter_type == 'business' %}active{% endif %}">Business (B2B){% if pending_verification %} · {{ pending_verification }} pending{% endif %}</a>
+</div>
+
+<div class="card">
+  <table>
+    <thead><tr><th>Name</th><th>Type</th><th>Contact</th><th>Credit</th><th></th></tr></thead>
+    <tbody>
+      {% for c in customers %}
+        <tr>
+          <td>
+            <strong>{{ c.name }}</strong>
+            {% if c.is_business %}<br><span class="muted" style="font-size:0.8rem;">{{ c.company_name }} · {{ c.business_type|replace('_',' ')|title }}</span>{% endif %}
+          </td>
+          <td>
+            {% if c.is_business %}
+              {% if c.business_verified %}<span class="badge badge-green">Business · Verified</span>{% else %}<span class="badge badge-express">Business · Pending</span>{% endif %}
+            {% else %}
+              <span class="badge badge-standard">Individual</span>
+            {% endif %}
+          </td>
+          <td>{{ c.email }}<br><span class="muted" style="font-size:0.8rem;">{{ c.phone or '—' }}</span></td>
+          <td>
+            {% if c.is_business %}
+              {{ currency }}{{ c.credit_used }} / {{ currency }}{{ c.credit_limit }} used
+            {% else %}<span class="muted">—</span>{% endif %}
+          </td>
+          <td>
+            {% if c.is_business %}
+              {% if not c.business_verified %}
+                <form method="post" action="{{ url_for('admin.customer_verify', user_id=c.id) }}" style="display:flex; gap:6px;">
+                  <input type="number" name="credit_limit" placeholder="Credit limit" style="width:120px;" value="50000">
+                  <button type="submit" class="btn btn-primary btn-sm">Verify</button>
+                </form>
+              {% else %}
+                <form method="post" action="{{ url_for('admin.customer_revoke', user_id=c.id) }}">
+                  <button type="submit" class="btn btn-outline btn-sm">Revoke credit</button>
+                </form>
+              {% endif %}
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="muted">No customers yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

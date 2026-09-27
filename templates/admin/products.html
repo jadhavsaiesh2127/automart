@@ -1,0 +1,34 @@
+{% extends "admin/base.html" %}
+{% block title %}Products — AutoMart Admin{% endblock %}
+{% block content %}
+<div class="admin-topline">
+  <h2>Products</h2>
+  <a href="{{ url_for('admin.product_new') }}" class="btn btn-primary">+ Add product</a>
+</div>
+
+<div class="card">
+  <table>
+    <thead><tr><th>Product</th><th>Vehicle</th><th>Category</th><th>Price</th><th>Bulk</th><th>Stock</th><th></th></tr></thead>
+    <tbody>
+      {% for p in products %}
+        <tr>
+          <td><strong>{{ p.name }}</strong><br><span class="mono muted" style="font-size:0.76rem;">{{ p.sku }}</span></td>
+          <td>{{ p.vehicle_label }}</td>
+          <td>{{ p.category_label }}</td>
+          <td>{{ currency }}{{ p.price }}</td>
+          <td>{% if p.has_bulk_pricing %}{{ currency }}{{ p.bulk_price }} @ {{ p.bulk_min_qty }}+{% else %}<span class="muted">—</span>{% endif %}</td>
+          <td>{% if p.stock <= 5 %}<span class="badge badge-red">{{ p.stock }}</span>{% else %}{{ p.stock }}{% endif %}</td>
+          <td style="display:flex; gap:6px;">
+            <a href="{{ url_for('admin.product_edit', product_id=p.id) }}" class="btn btn-outline btn-sm">Edit</a>
+            <form method="post" action="{{ url_for('admin.product_delete', product_id=p.id) }}" onsubmit="return confirm('Remove this product from the catalog?');">
+              <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="muted">No products yet — add your first one.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

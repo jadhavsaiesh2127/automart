@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Your cart — AutoMart{% endblock %}
+{% block content %}
+<div class="container section">
+  <h2>Your cart</h2>
+
+  {% if items %}
+    <div class="checkout-grid">
+      <div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Item</th><th>Unit price</th><th>Qty</th><th>Total</th><th></th></tr></thead>
+            <tbody>
+              {% for item in items %}
+                {% set unit = item.unit_price(current_user.account_type) %}
+                <tr>
+                  <td>
+                    <strong>{{ item.product.name }}</strong><br>
+                    <span class="muted" style="font-size:0.8rem;">{{ item.product.vehicle_label }}
+                      {% if current_user.is_business and item.product.has_bulk_pricing and unit == item.product.bulk_price %}
+                        · <span style="color:var(--green); font-weight:600;">Bulk price applied</span>
+                      {% endif %}
+                    </span>
+                  </td>
+                  <td>{{ currency }}{{ unit }}</td>
+                  <td>
+                    <form method="post" action="{{ url_for('storefront.cart_update') }}" style="display:flex; gap:6px;">
+                      <input type="hidden" name="item_id" value="{{ item.id }}">
+                      <input type="number" name="quantity" value="{{ item.quantity }}" min="1" style="width:64px;" onchange="this.form.submit()">
+                    </form>
+                  </td>
+                  <td>{{ currency }}{{ unit * item.quantity }}</td>
+                  <td>
+                    <form method="post" action="{{ url_for('storefront.cart_remove', item_id=item.id) }}">
+                      <button type="submit" class="btn btn-outline btn-sm">Remove</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card summary-card" style="padding:20px;">
+        <h3>Order summary</h3>
+        <div class="summary-line"><span>Subtotal</span><span>{{ currency }}{{ subtotal }}</span></div>
+        <div class="summary-line"><span>Delivery</span><span class="muted">Calculated at checkout</span></div>
+        {% if all_express %}
+          <p class="badge badge-express" style="margin:10px 0;">⚡ Eligible for 1-Hour Express delivery</p>
+        {% endif %}
+        <a href="{{ url_for('storefront.checkout') }}" class="btn btn-primary btn-block" style="margin-top:12px;">Proceed to checkout</a>
+      </div>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h3>Your cart is empty</h3>
+      <p>Browse the catalog to find parts for your vehicle.</p>
+      <a href="{{ url_for('storefront.shop') }}" class="btn btn-dark">Start shopping</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

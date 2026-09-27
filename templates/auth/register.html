@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Create account — AutoMart{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="auth-shell" style="max-width:480px;">
+    <h2>Create your account</h2>
+    <p class="muted">Track orders and check out faster next time.</p>
+    <form method="post" id="register-form">
+      <div class="pay-method-tabs" style="margin-bottom:20px;">
+        <div class="pay-method-tab active" data-account-type="individual" onclick="selectAccountType('individual')">Individual</div>
+        <div class="pay-method-tab" data-account-type="business" onclick="selectAccountType('business')">Business (B2B)</div>
+      </div>
+      <input type="hidden" name="account_type" id="account_type" value="individual">
+
+      <div class="form-group">
+        <label>Full name</label>
+        <input type="text" name="name" required autofocus>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email address</label>
+          <input type="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label>Phone number</label>
+          <input type="tel" name="phone" placeholder="10-digit mobile">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" name="city">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" required>
+        </div>
+      </div>
+
+      <div id="business-fields" style="display:none; border-top:1px solid var(--line); padding-top:14px; margin-top:4px;">
+        <p class="muted" style="font-size:0.82rem;">Business accounts unlock bulk/tiered pricing immediately. Net 30 credit terms are enabled after admin verification.</p>
+        <div class="form-group">
+          <label>Company / firm name</label>
+          <input type="text" name="company_name" placeholder="e.g. Sharma Auto Works">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>GSTIN</label>
+            <input type="text" name="gst_number" placeholder="22AAAAA0000A1Z5" style="text-transform:uppercase;">
+          </div>
+          <div class="form-group">
+            <label>Business type</label>
+            <select name="business_type">
+              {% for code, label in business_types %}
+                <option value="{{ code }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">Create account</button>
+    </form>
+    <p style="margin-top:16px; font-size:0.85rem;">Already have an account? <a href="{{ url_for('auth.login') }}" style="color:var(--amber-dark); font-weight:600;">Sign in</a></p>
+  </div>
+</div>
+<script>
+  function selectAccountType(type) {
+    document.getElementById('account_type').value = type;
+    document.querySelectorAll('[data-account-type]').forEach(el => el.classList.toggle('active', el.dataset.accountType === type));
+    document.getElementById('business-fields').style.display = type === 'business' ? 'block' : 'none';
+  }
+</script>
+{% endblock %}

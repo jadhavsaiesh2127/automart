@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}AutoMart — Vehicle Parts & Accessories, Delivered Fast{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack" id="flash-stack">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="{{ url_for('storefront.home') }}" class="logo">AutoMart<span class="dot">.</span></a>
+      <div class="search-bar">
+        <form action="{{ url_for('storefront.shop') }}" method="get">
+          <input type="text" name="q" placeholder="Search parts, brands, part numbers..." value="{{ request.args.get('q','') }}">
+          <button type="submit">Search</button>
+        </form>
+      </div>
+      <nav class="top-actions">
+        {% if current_user.is_authenticated %}
+          {% if current_user.is_admin %}
+            <a href="{{ url_for('admin.dashboard') }}">Admin</a>
+          {% endif %}
+          <a href="{{ url_for('storefront.my_orders') }}">Orders</a>
+          <a href="{{ url_for('storefront.cart') }}">Cart{% if cart_count %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}</a>
+          <a href="{{ url_for('auth.logout') }}">Sign out</a>
+        {% else %}
+          <a href="{{ url_for('storefront.cart') }}">Cart</a>
+          <a href="{{ url_for('auth.login') }}">Sign in</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <div class="vehicle-strip">
+    <div class="vehicle-strip-inner">
+      <a href="{{ url_for('storefront.shop') }}" class="vehicle-tab {% if not request.args.get('vehicle_type') %}active{% endif %}">All Vehicles</a>
+      {% for code, label in nav_vehicle_types %}
+        <a href="{{ url_for('storefront.shop', vehicle_type=code) }}" class="vehicle-tab {% if request.args.get('vehicle_type') == code %}active{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div>
+        <div class="logo" style="color:#fff; margin-bottom:8px;">AutoMart<span class="dot">.</span></div>
+        <p style="color:#7d8590; max-width:32ch;">Genuine and OEM-compatible parts &amp; accessories for every vehicle on Indian roads.</p>
+      </div>
+      <div>
+        <strong style="color:#fff;">Vehicles</strong><br>
+        {% for code, label in nav_vehicle_types %}{{ label }}{% if not loop.last %} · {% endif %}{% endfor %}
+      </div>
+      <div>
+        <strong style="color:#fff;">Delivery</strong><br>
+        1-Hour Express on lightweight parts &amp; accessories<br>Standard 2–3 day delivery everywhere else
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
